@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: azure-vote-back
-spec:
+spec: # data path /bitnami/redis/data
   replicas: 3
   selector:
     matchLabels:
