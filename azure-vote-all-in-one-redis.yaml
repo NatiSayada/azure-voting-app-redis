@@ -1,9 +1,43 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: azurefile
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  azureFile:
+    secretName: azure-secret
+    shareName: aksshare
+    readOnly: false
+  mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1000
+  - gid=1000
+  - mfsymlinks
+  - nobrl
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: azurefile
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: azure-vote-back
 spec: # data path /bitnami/redis/data
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: azure-vote-back
@@ -28,10 +62,8 @@ spec: # data path /bitnami/redis/data
               mountPath: /bitnami/redis/data
       volumes:
         - name: azure
-          azureFile:
-            secretName: azure-secret
-            shareName: aksshare
-            readOnly: false
+          persistentVolumeClaim:
+            claimName: azurefile
 ---
 apiVersion: v1
 kind: Service
@@ -48,7 +80,7 @@ kind: Deployment
 metadata:
   name: azure-vote-front
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: azure-vote-front
